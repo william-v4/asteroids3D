@@ -59,14 +59,17 @@ func _process(delta):
 	# actually move the player
 	global_transform.origin = direction
 	# dynamic crosshair
-	if $View/Camera/RayCast.get_collider() and "Asteroid" in $View/Camera/RayCast.get_collider().name:
+	if $View/Camera/RayCast.get_collider() and "Asteroid" in $View/Camera/RayCast.get_collider().name and !ded:
 		$View/Control/CenterContainer/Crosshair.modulate = Color(0, 1, 0)
 	else:
-		$View/Control/CenterContainer/Crosshair.modulate = Color(1, 1, 1)
+		if !ded:
+			$View/Control/CenterContainer/Crosshair.modulate = Color(1, 1, 1)
 	# shoot on click/trigger
 	if Input.is_action_just_pressed("shoot") && !ded:
 		# pew pew
 		$AudioStreamPlayer3D.play()
+		# for extra immersion
+		Input.start_joy_vibration(0, 0.5, 0, 0.1)
 		# prepare instance of laser
 		var laser = laserscene.instance()
 		# make sure it shoots in our direction
@@ -86,7 +89,7 @@ func _process(delta):
 	else: if int($View/Control/Score.text) > score:
 		$View/Control/Score.text = str(int($View/Control/Score.text) - 1)
 	# deploy proton wave and check if cooldown done
-	if Input.is_action_just_pressed("wave") && $WaveCooldown.is_stopped():
+	if Input.is_action_just_pressed("wave") and $WaveCooldown.is_stopped() and !ded:
 		# add instance of proton wave
 		var wave = wavescene.instance()
 		get_parent().add_child(wave)
@@ -107,7 +110,9 @@ func _process(delta):
 	# check collisions
 	for x in $Area.get_overlapping_bodies():
 		# check if asteroid and make sure powerup not active
-		if "Asteroid" in x.name && !invincible:
+		if "Asteroid" in x.name and !invincible and !ded:
+			# for ultra immersive experience
+			Input.start_joy_vibration(0, 1, 1, 1)
 			# game over
 			ded = true
 			var scoreboard = deathscreen.instance()
